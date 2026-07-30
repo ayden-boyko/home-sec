@@ -1,0 +1,16 @@
+[Unit]
+Description=Camera RTSP Stream
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%u
+ExecStart=/usr/local/bin/camera_stream.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
