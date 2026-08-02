@@ -1,12 +1,10 @@
 #!/bin/bash
 set -e
 
-# Kill any existing processes
 pkill -f rpicam-vid || true
-pkill -f "ffmpeg.*rtsp" || true
 sleep 1
 
-# Stream camera via RTSP
+# Output H.264 to TCP socket that Pi 4B will connect to
 rpicam-vid \
   -t 0 \
   --width 1280 \
@@ -15,10 +13,5 @@ rpicam-vid \
   --codec h264 \
   --bitrate 2000k \
   --nopreview \
-  -o - | \
-ffmpeg \
-  -fflags nobuffer \
-  -i pipe: \
-  -c:v copy \
-  -f rtsp \
-  rtsp://0.0.0.0:5000/stream
+  --listen \
+  --output "tcp://0.0.0.0:5000"

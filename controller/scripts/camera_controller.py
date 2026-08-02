@@ -15,10 +15,7 @@ CORS(app)
 DB_FILE = os.path.expanduser("~/cameras.db")
 HLS_BASE = "/var/www/html"
 
-# DATABASE 
-
 def init_db():
-    """Create database if it doesn't exist"""
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('''
@@ -43,7 +40,6 @@ def init_db():
     conn.close()
 
 def get_cameras():
-    """List all cameras"""
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('SELECT id, name, ip, port, enabled, last_seen FROM cameras')
@@ -63,7 +59,6 @@ def get_cameras():
     return cameras
 
 def add_camera(name, ip, port=5000):
-    """Add a new camera"""
     try:
         requests.get(f'http://{ip}:8000/health', timeout=2)
     except:
@@ -83,7 +78,6 @@ def add_camera(name, ip, port=5000):
         return False, "Camera with this IP already exists"
 
 def remove_camera(camera_id):
-    """Remove a camera"""
     stop_stream(camera_id)
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -92,18 +86,14 @@ def remove_camera(camera_id):
     conn.close()
     return True, "Camera removed"
 
-#  STREAM MANAGEMENT
-
 def start_stream(camera_id, camera_ip, camera_port):
-    """Start RTSP→HLS conversion for a camera"""
     hls_dir = f"{HLS_BASE}/cam{camera_id}"
     os.makedirs(hls_dir, exist_ok=True)
     
     cmd = [
         'ffmpeg',
         '-fflags', 'nobuffer',
-        '-rtsp_transport', 'tcp',
-        '-i', f'rtsp://{camera_ip}:{camera_port}/stream',
+        '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
         '-c:v', 'copy',
         '-f', 'hls',
         '-hls_time', '2',
@@ -122,7 +112,6 @@ def start_stream(camera_id, camera_ip, camera_port):
     print(f"Started stream for camera {camera_id} (PID: {proc.pid})")
 
 def stop_stream(camera_id):
-    """Stop RTSP→HLS conversion for a camera"""
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('SELECT process_id FROM streams WHERE camera_id = ?', (camera_id,))
@@ -141,7 +130,6 @@ def stop_stream(camera_id):
     conn.close()
 
 def health_check_loop():
-    """Periodically check if cameras are alive"""
     while True:
         time.sleep(15)
         conn = sqlite3.connect(DB_FILE)
@@ -160,29 +148,23 @@ def health_check_loop():
         
         conn.close()
 
-# API ROUTES 
-
 @app.route('/api/cameras', methods=['GET'])
 def list_cameras():
-    """List all cameras"""
     return jsonify(get_cameras())
 
 @app.route('/api/cameras', methods=['POST'])
 def create_camera():
-    """Add a new camera"""
     data = request.json
     success, msg = add_camera(data['name'], data['ip'], data.get('port', 5000))
     return jsonify({'success': success, 'message': msg}), (200 if success else 400)
 
 @app.route('/api/cameras/<int:camera_id>', methods=['DELETE'])
 def delete_camera(camera_id):
-    """Remove a camera"""
     success, msg = remove_camera(camera_id)
     return jsonify({'success': success, 'message': msg})
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    """Server health"""
     return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':
