@@ -5,9 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=%u
-WorkingDirectory=%h
-ExecStart=/usr/bin/python3 %h/camera_controller.py
+User=pi4b
+WorkingDirectory=/home/pi4b
+ExecStart=/usr/bin/python3 /home/pi4b/camera_controller.py
 Restart=always
 RestartSec=5
 StandardOutput=journal
