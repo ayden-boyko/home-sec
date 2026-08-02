@@ -5,7 +5,7 @@ echo "Setting up Pi Zero camera stream..."
 
 # Install dependencies
 echo "Installing dependencies..."
-pip install flask
+pip install --break-system-packages flask
 
 # Copy scripts to correct locations
 echo "Installing scripts..."

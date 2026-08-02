@@ -5,8 +5,9 @@ echo "Setting up Pi4B controller..."
 
 # Install dependencies
 echo "Installing dependencies..."
+sudo apt update
 sudo apt install -y nginx
-pip install flask flask-cors requests
+pip install --break-system-packages flask flask-cors requests
 
 # Copy scripts
 echo "Installing scripts..."
