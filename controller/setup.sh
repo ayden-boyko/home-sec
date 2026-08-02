@@ -11,8 +11,8 @@ pip install --break-system-packages flask flask-cors requests
 
 # Copy scripts
 echo "Installing scripts..."
-cp scripts/camera_controller.py ~/$USER/camera_controller.py
-chmod +x ~/$USER/camera_controller.py
+cp scripts/camera_controller.py ~/camera_controller.py
+chmod +x ~/camera_controller.py
 
 # Install systemd service
 echo "Installing systemd service..."
