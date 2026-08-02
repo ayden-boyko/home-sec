@@ -12,7 +12,7 @@ echo "Installing scripts..."
 sudo cp scripts/camera_stream.sh /usr/local/bin/camera_stream.sh
 sudo chmod +x /usr/local/bin/camera_stream.sh
 
-cp scripts/health_endpoint.py ~/$USER/health_check.py
+cp scripts/health_check.py ~/$USER/health_check.py
 
 # Install systemd services
 echo "Installing systemd services..."

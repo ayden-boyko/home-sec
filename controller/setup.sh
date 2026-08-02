@@ -16,7 +16,7 @@ chmod +x ~/$USER/camera_controller.py
 
 # Install systemd service
 echo "Installing systemd service..."
-sudo cp systemd/camera-controller.service /etc/systemd/system/
+sudo cp systemd/camera_controller.service /etc/systemd/system/
 
 # Copy web dashboard
 echo "Installing web dashboard..."
@@ -26,8 +26,8 @@ sudo cp web/dashboard.html /var/www/html/dashboard.html
 # Enable services
 echo "Starting services..."
 sudo systemctl daemon-reload
-sudo systemctl enable nginx camera-controller.service
-sudo systemctl start nginx camera-controller.service
+sudo systemctl enable nginx camera_controller.service
+sudo systemctl start nginx camera_controller.service
 
 echo "✓ Pi4B setup complete!"
 echo ""
