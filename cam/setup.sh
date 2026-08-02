@@ -26,7 +26,6 @@ sudo systemctl enable camera_stream.service health_endpoint.service
 sudo systemctl start camera_stream.service health_endpoint.service
 
 echo "✓ Pi Zero setup complete!"
-echo ""
 echo "Check status with:"
 echo "  sudo systemctl status camera_stream.service"
 echo "  sudo systemctl status health_endpoint.service"

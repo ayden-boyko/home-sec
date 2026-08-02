@@ -30,5 +30,4 @@ sudo systemctl enable nginx camera_controller.service
 sudo systemctl start nginx camera_controller.service
 
 echo "✓ Pi4B setup complete!"
-echo ""
 echo "Access dashboard at: http://$(hostname -I | awk '{print $1}')/dashboard.html"
