@@ -60,9 +60,11 @@ def get_cameras():
 
 def add_camera(name, ip, port=5000):
     try:
-        requests.get(f'http://{ip}:8000/health', timeout=2)
-    except:
-        return False, "Cannot reach camera at this IP"
+        r = requests.get(f'http://{ip}:8000/health', timeout=2)
+        print(f"Health check passed for {ip}: {r.status_code}")
+    except Exception as e:
+        print(f"Health check failed for {ip}: {e}")
+        return False, f"Cannot reach camera at this IP: {e}"
     
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -71,10 +73,12 @@ def add_camera(name, ip, port=5000):
         conn.commit()
         camera_id = c.lastrowid
         conn.close()
+        print(f"Camera added to DB: {camera_id}")
         start_stream(camera_id, ip, port)
         return True, f"Camera added (ID: {camera_id})"
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as e:
         conn.close()
+        print(f"DB error: {e}")
         return False, "Camera with this IP already exists"
 
 def remove_camera(camera_id):
@@ -97,11 +101,13 @@ def start_stream(camera_id, camera_ip, camera_port):
         '-c:v', 'copy',
         '-f', 'hls',
         '-hls_time', '2',
-        '-hls_list_size', '3',
+        '-hls_list_size', '10',
+        '-hls_flags', 'delete_segments',
         f'{hls_dir}/stream.m3u8'
     ]
     
-    proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(f"Starting ffmpeg: {' '.join(cmd)}")
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
