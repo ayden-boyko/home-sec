@@ -102,7 +102,7 @@
   </head>
   <body>
     <div class="container">
-      <h1>Security Camera Dashboard</h1>
+      <h1>🎥 Security Camera Dashboard</h1>
 
       <div class="add-camera">
         <h3>Add Camera</h3>
@@ -121,7 +121,8 @@
     </div>
 
     <script>
-      const API_URL = "http://localhost:5001/api";
+      // Get the actual host instead of hardcoding localhost
+      const API_URL = `http://${window.location.hostname}:5001/api`;
 
       async function loadCameras() {
         try {
