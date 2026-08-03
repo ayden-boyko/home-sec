@@ -43,21 +43,21 @@ Access dashboard:
 http://<pi4b-ip>/dashboard.html
 
 ## Directory Structure
-
-├── pi-zero/
-│ ├── scripts/
-│ │ ├── camera-stream.sh # RTSP streaming
-│ │ └── health_endpoint.py # Health check endpoint
-│ ├── systemd/
-│ │ ├── camera-stream.service
-│ │ └── health-endpoint.service
-│ └── setup.sh # Automated setup
-├── pi4b/
-│ ├── scripts/
-│ │ └── camera_controller.py # Main controller (Flask)
-│ ├── systemd/
-│ │ └── camera-controller.service
-│ ├── web/
-│ │ └── dashboard.html # Web UI
-│ └── setup.sh # Automated setup
-└── README.md
+  
+├── cam/  
+│ ├── scripts/  
+│ │ ├── camera-stream.sh # RTSP streaming  
+│ │ └── health_endpoint.py # Health check endpoint  
+│ ├── systemd/  
+│ │ ├── camera-stream.service  
+│ │ └── health-endpoint.service  
+│ └── setup.sh # Automated setup  
+├── controller/  
+│ ├── scripts/  
+│ │ └── camera_controller.py # Main controller (Flask)  
+│ ├── systemd/  
+│ │ └── camera-controller.service  
+│ ├── web/  
+│ │ └── dashboard.html # Web UI  
+│ └── setup.sh # Automated setup  
+└── README.md  
