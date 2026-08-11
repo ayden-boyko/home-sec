@@ -7,5 +7,5 @@ pycache/
 *~
 .vscode/
 .idea/
-venv/
+.venv/
 env/
