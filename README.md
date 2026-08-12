@@ -2,6 +2,8 @@
 
 A Raspberry Pi-based multi-camera home security system with web dashboard and real-time streaming.
 
+![Home-Sec Workflow](/home-sec%20workflow.png)
+
 ## Architecture
 
 - **Pi Zero 2W (Camera nodes)**: Capture video, encode H.264, stream via RTSP
@@ -43,7 +45,7 @@ Access dashboard:
 http://<pi4b-ip>/dashboard.html
 
 ## Directory Structure
-  
+
 ├── cam/  
 │ ├── scripts/  
 │ │ ├── camera-stream.sh # RTSP streaming  
@@ -60,4 +62,4 @@ http://<pi4b-ip>/dashboard.html
 │ ├── web/  
 │ │ └── dashboard.html # Web UI  
 │ └── setup.sh # Automated setup  
-└── README.md  
+└── README.md
