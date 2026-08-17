@@ -13,5 +13,6 @@ rpicam-vid \
   --codec h264 \
   --bitrate 2000k \
   --nopreview \
+  --inline \
   --listen \
   --output "tcp://0.0.0.0:5000"

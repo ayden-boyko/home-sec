@@ -142,15 +142,20 @@ class CameraController:
         os.makedirs(hls_dir, exist_ok=True)
     
         cmd = [
-            'ffmpeg',
-            '-fflags', 'nobuffer',
-            '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
-            '-c:v', 'copy',
-            '-f', 'hls',
-            '-hls_time', '2',
-            '-hls_list_size', '10',
-            '-hls_flags', 'delete_segments',
-            f'{hls_dir}/stream.m3u8'
+            [
+                'ffmpeg',
+                '-fflags', 'nobuffer+genpts',  # genpts fixes missing presentation timestamps over raw TCP
+                '-reorder_queue_size', '200',  # Buffers packets in Pi 4B RAM to smooth out Wi-Fi jitter
+                '-i', f'tcp://{camera_ip}:{camera_port}?listen=0', # Actively connects to the Pi Zero
+                '-c:v', 'copy',                # Direct stream copy (uses ~1-2% total CPU on Pi 4B)
+                '-an',                         # Drops audio to save network bandwidth (remove if mic is used)
+                '-f', 'hls',
+                '-hls_time', '2',
+                '-hls_list_size', '10',
+                '-hls_flags', 'delete_segments+temp_file', # temp_file ensures the playlist doesn't glitch during overwrites
+                f'{hls_dir}/stream.m3u8'       # Safely saved directly to your NVMe SSD path
+            ]
+
         ]
         
         #TODO: https://claude.ai/chat/4f84f2f7-8524-4b42-938a-7b03160ed588
@@ -160,13 +165,17 @@ class CameraController:
             '-vf', 'scale=1280:720',
             'pipe:1'
         ]
-        try:
-            print(f"Starting ffmpeg: {' '.join(cmd)}")
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            self.processes[camera_id] = proc
-        except Exception as e:
-            print(f"Failed to start ffmpeg for camera {camera_id}: {e}")
-            return False
+        
+        while True:
+            try:
+                print(f"Starting ffmpeg: {' '.join(cmd)}")
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.processes[camera_id] = proc
+                proc.wait() # Wait for the process to finish (blocking)
+                print(f"ffmpeg process for camera {camera_id} exited with code {proc.returncode}")
+            except Exception as e:
+                print(f"Failed to start ffmpeg for camera {camera_id}: {e}")
+                return False
         
         
         conn = sqlite3.connect(self.db_file)
