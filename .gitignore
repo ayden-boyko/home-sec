@@ -1,7 +1,6 @@
 *.pyc
 pycache/
 *.db
-*.log
 .DS_Store
 *.swp
 *~
