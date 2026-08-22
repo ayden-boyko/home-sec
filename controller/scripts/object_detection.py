@@ -44,6 +44,9 @@ class ObjectDetector:
 
         img = cv2.imread(frame)
 
+        # Extract base filename without extension to create unique output names
+        base_filename = Path(frame).stem  # e.g., "IMG_4821"
+
         # 2. AUTO-RESIZE LARGE IPHONE PHOTOS PROPORTIONALLY
         MAX_DISPLAY_DIM = 800
         h_orig, w_orig = img.shape[:2]
@@ -54,15 +57,17 @@ class ObjectDetector:
                 (int(w_orig * scale), int(h_orig * scale)),
                 interpolation=cv2.INTER_AREA,
             )
-            print(f"Resized iPhone photo down to: {img.shape[1]}x{img.shape[0]}")
 
         height, width = img.shape[:2]
 
-        # Save the clean raw input image copy
-        os.makedirs("output", exist_ok=True)
-        cv2.imwrite("output/raw_input.jpg", img)
+        # Ensure output folder exists
+        output_dir = "output"
+        os.makedirs(output_dir, exist_ok=True)
 
-        # 3. Preprocess Frame for YOLO26 (Input grid must be 640x640)
+        # Save unique raw input file
+        cv2.imwrite(os.path.join(output_dir, f"{base_filename}_raw.jpg"), img)
+
+        # 3. Preprocess Frame for YOLO26
         blob = cv2.dnn.blobFromImage(
             img, scalefactor=1 / 255.0, size=(640, 640), swapRB=True, crop=False
         )
@@ -74,18 +79,16 @@ class ObjectDetector:
         t1 = time.time()
         inference_time = t1 - t0
 
-        # LOGGING INFERENCE TIME INTO A LOG FILE
-        log_line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} - Frame: {os.path.basename(frame)} - Inference time: {inference_time:.3f} seconds\n"
-        with open("inference_history.log", "a") as log_file:
+        log_path = os.path.join(output_dir, "inference_history.log")
+        log_line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} | File: {os.path.basename(frame)} | Inference: {inference_time:.3f}s\n"
+        with open(log_path, "a") as log_file:
             log_file.write(log_line)
-        print(f"Backend: {self.__model.getBackendName()} - Inference time: {inference_time:.3f} seconds logged.")
 
-        # 4. Process and Save the Blob Visualization (Replaces Interactive Trackbar)
+        # 4. Process and Save unique Blob Visualization
         r0 = blob[0].transpose(1, 2, 0)
         r0 = cv2.normalize(r0, None, 0, 255, cv2.NORM_MINMAX).astype("uint8")
         r0 = cv2.cvtColor(r0, cv2.COLOR_RGB2BGR)
 
-        # Render bounding boxes onto the blob file at a fixed 50% confidence baseline
         for output in outputs[0][0]:
             if output[4] > 0.50:
                 classID = int(output[5])
@@ -94,7 +97,7 @@ class ObjectDetector:
                     cv2.rectangle(
                         r0, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2
                     )
-        cv2.imwrite("output/processed_blob.jpg", r0)
+        cv2.imwrite(os.path.join(output_dir, f"{base_filename}_blob.jpg"), r0)
 
         # 5. Native YOLO26 End-to-End Processing
         for detection in outputs[0][0]:
@@ -125,14 +128,11 @@ class ObjectDetector:
                     color,
                     1,
                 )
-                print(
-                    f"Security Alert: Detected {class_name} ({confidence*100:.1f}%)"
-                )
 
-        # SAVE FINAL SCAN PHOTO
-        cv2.imwrite("output/processed_final.jpg", img)
-        print("Files successfully generated inside output/ directory.")
+        final_img_path = os.path.join(output_dir, f"{base_filename}_processed.jpg")
+        cv2.imwrite(final_img_path, img)
 
+        print(f"Saved: {final_img_path} and updated log in {log_path}")
         return outputs
 
 
