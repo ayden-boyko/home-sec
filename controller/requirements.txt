@@ -1,0 +1,7 @@
+# Pi 4B controller: camera_controller.py, main.py, object_detection.py
+flask>=3.0
+flask-cors>=4.0
+requests>=2.31
+numpy>=1.26
+opencv-python-headless>=4.9 ; platform_machine == "aarch64"
+opencv-python>=4.9 ; platform_machine != "aarch64"

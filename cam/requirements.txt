@@ -1,0 +1,2 @@
+# Pi Zero camera: health_check.py
+flask>=3.0
