@@ -128,7 +128,7 @@ if __name__ == "__main__":
     model_path = "models/yolo26n.onnx"  # Update with your model path
     detector = ObjectDetector(model_path)
     #get all files from this folder and test them
-    path = Path("/home/ayden/Documents/Cat-TD")
+    path = Path("home-sec/Cat-TD")
     files = [str(f) for f in path.iterdir() if f.is_file()]
     for filepath in files:
         detector.test_or(filepath)
