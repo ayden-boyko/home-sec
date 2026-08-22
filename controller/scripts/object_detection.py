@@ -62,9 +62,6 @@ class ObjectDetector:
         output_dir = "output"
         os.makedirs(output_dir, exist_ok=True)
 
-        # Save unique raw input file
-        cv2.imwrite(os.path.join(output_dir, f"{base_filename}_raw.jpg"), img)
-
         # 3. Preprocess Frame for YOLO26
         blob = cv2.dnn.blobFromImage(
             img, scalefactor=1 / 255.0, size=(640, 640), swapRB=True, crop=False
@@ -95,7 +92,6 @@ class ObjectDetector:
                     cv2.rectangle(
                         r0, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2
                     )
-        cv2.imwrite(os.path.join(output_dir, f"{base_filename}_blob.jpg"), r0)
 
         # 5. Native YOLO26 End-to-End Processing
         for detection in outputs[0][0]:
