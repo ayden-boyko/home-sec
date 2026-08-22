@@ -74,7 +74,7 @@ class ObjectDetector:
         t1 = time.time()
         inference_time = t1 - t0
 
-        log_path = os.path.join(output_dir, f"inference_history_{base_filename}.log")
+        log_path = os.path.join(output_dir, f"TARGET_CPU inference_history_{base_filename}.log")
         log_line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} | File: {os.path.basename(frame)} | Inference: {inference_time:.3f}s\n"
         with open(log_path, "a") as log_file:
             log_file.write(log_line)
