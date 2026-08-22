@@ -10,7 +10,7 @@ from flask import Flask, jsonify, request
 #TODO: check if ffmpeg proccesses are alive, if not, restart them
 class CameraController:
     def __init__(self, db_file, hls_base):
-        self.db_file = db_file
+        self.db_file = db_file   
         self.hls_base = hls_base
         self.processes = {}  # Store subprocesses for each camera
         self.app = Flask(__name__)
