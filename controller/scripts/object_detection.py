@@ -19,7 +19,7 @@ class ObjectDetector:
 
     def __setup_model(self) -> None:
         net = cv2.dnn.readNetFromONNX(self.model_path) # DNN_TARGET_CPU
-        net.setPreferableBackend(cv2.dnn.DNN_TARGET_CPU)  # or cv2.dnn.DNN_TARGET_OPENCL for GPU
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)  # or cv2.dnn.DNN_TARGET_OPENCL for GPU
         # check performance with different backends cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE (slightly better? more testing needed)
         self.__model = net
         self.input_name = self.__model.getLayerNames()[0]
@@ -74,7 +74,7 @@ class ObjectDetector:
         t1 = time.time()
         inference_time = t1 - t0
 
-        log_path = os.path.join(output_dir, f"TARGET_CPU inference_history_{base_filename}.log")
+        log_path = os.path.join(output_dir, f"BACKEND_INFERENCE inference_history_{base_filename}.log")
         log_line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} | File: {os.path.basename(frame)} | Inference: {inference_time:.3f}s\n"
         with open(log_path, "a") as log_file:
             log_file.write(log_line)
