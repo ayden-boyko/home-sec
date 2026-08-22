@@ -20,8 +20,8 @@ class ObjectDetector:
         self.__setup_model()
 
     def __setup_model(self) -> None:
-        net = cv2.dnn.readNetFromONNX(self.model_path)
-        net.setPreferableBackend(cv2.dnn.DNN_TARGET_CPU)  # or cv2.dnn.DNN_TARGET_OPENCL for GPU
+        net = cv2.dnn.readNetFromONNX(self.model_path) # DNN_TARGET_CPU
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)  # or cv2.dnn.DNN_TARGET_OPENCL for GPU
         # check performance with different backends cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE (slightly better? more testing needed)
         self.__model = net
         self.input_name = self.__model.getLayerNames()[0]
@@ -78,7 +78,7 @@ class ObjectDetector:
         log_line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} - Frame: {os.path.basename(frame)} - Inference time: {inference_time:.3f} seconds\n"
         with open("inference_history.log", "a") as log_file:
             log_file.write(log_line)
-        print(f"Inference time: {inference_time:.3f} seconds logged.")
+        print(f"Backend: {self.__model.getBackendName()} - Inference time: {inference_time:.3f} seconds logged.")
 
         # 4. Process and Save the Blob Visualization (Replaces Interactive Trackbar)
         r0 = blob[0].transpose(1, 2, 0)
