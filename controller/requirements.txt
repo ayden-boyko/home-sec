@@ -5,3 +5,9 @@ requests>=2.31
 numpy>=1.26
 opencv-python-headless>=4.9 ; platform_machine == "aarch64"
 opencv-python>=4.9 ; platform_machine != "aarch64"
+
+# Pi 4 (aarch64) gets CPU-only PyTorch 2.4.0 directly from the wheel house
+torch>=2.2 ; platform_machine == "aarch64" --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Other machines get standard CUDA-enabled PyTorch from default PyPI
+torch>=2.2 ; platform_machine != "aarch64"
