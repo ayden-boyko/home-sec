@@ -5,8 +5,6 @@ import cv2
 import numpy as np
 import time
 
-from torch import classes
-
 
 class ObjectDetector:
     def __init__(self, model_path, provider="CPUExecutionProvider"):
