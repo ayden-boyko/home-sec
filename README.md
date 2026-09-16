@@ -46,6 +46,9 @@ http://<pi4b-ip>/dashboard.html
 
 ## Directory Structure
 
+├── agents/
+| ├── captioning/
+| ├── execution/
 ├── cam/  
 │ ├── scripts/  
 │ │ ├── camera-stream.sh # RTSP streaming  
@@ -62,4 +65,5 @@ http://<pi4b-ip>/dashboard.html
 │ ├── web/  
 │ │ └── dashboard.html # Web UI  
 │ └── setup.sh # Automated setup  
+├── models/
 └── README.md

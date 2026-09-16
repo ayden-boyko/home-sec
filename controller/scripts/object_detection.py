@@ -28,6 +28,9 @@ class ObjectDetector:
     def set_fps(self, fps) -> None:
         self.fps = fps
 
+    # TODO: Add a method to process video streams and return detections in real-time
+    
+
     def test_or(self, frame):
         # 1. Target Classes for Home Security
         TARGET_OBJECTS = ["person", "cat", "knife", "scissors"]
