@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import sqlite3
-import subprocess
 import os
 import threading
-import requests
-from datetime import datetime
-import time
+
 import camera_controller as CC
+from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)

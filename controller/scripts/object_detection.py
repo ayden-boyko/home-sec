@@ -1,9 +1,9 @@
 import os
+import time
 from pathlib import Path
 
 import cv2
 import numpy as np
-import time
 
 
 class ObjectDetector:
@@ -34,8 +34,11 @@ class ObjectDetector:
     def test_or(self, frame):
         # 1. Target Classes for Home Security
         TARGET_OBJECTS = ["person", "cat", "knife", "scissors"]
+        classes = None
 
-        classes = open("models/coco.names").read().strip().split("\n")
+        with open("models/coco.names", "r") as f:
+            classes = f.read().strip().split("\n")
+
         np.random.seed(42)
         colors = np.random.randint(0, 255, size=(len(classes), 3), dtype="uint8")
 

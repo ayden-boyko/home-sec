@@ -2,9 +2,12 @@ import os
 import sqlite3
 import subprocess
 import time
+from datetime import datetime, timedelta, timezone
+
 import requests
-from datetime import datetime
 from flask import Flask, jsonify, request
+
+PST = timezone(timedelta(hours=-8))
 
 
 #TODO: check if ffmpeg proccesses are alive, if not, restart them
@@ -97,7 +100,7 @@ class CameraController:
                 'port': row[3],
                 'enabled': bool(row[4]),
                 'last_seen': row[5],
-                'status': 'online' if row[5] and (datetime.now() - datetime.fromisoformat(row[5])).total_seconds() < 30 else 'offline'
+                'status': 'online' if row[5] and (datetime.now(PST) - datetime.fromisoformat(row[5])).total_seconds() < 30 else 'offline'
             }
             for row in c.fetchall()
         ]
@@ -230,7 +233,7 @@ class CameraController:
                 try:
                     requests.get(f'http://{ip}:8000/health', timeout=2)
                     c.execute('UPDATE cameras SET last_seen = ? WHERE id = ?', 
-                            (datetime.now().isoformat(), camera_id))
+                            (datetime.now(PST).isoformat(), camera_id))
                     conn.commit()
                 except (KeyboardInterrupt, SystemExit):
                     raise
