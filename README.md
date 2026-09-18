@@ -1,8 +1,13 @@
 # Home Security Camera System
 
 A Raspberry Pi-based multi-camera home security system with web dashboard and real-time streaming.
+This system has several "smart" features:
 
-![Home-Sec Workflow](/home-sec%20workflow.png)
+- Flagged frames are passed into a multi-agent workflow, these agents then react accordingly.
+  - Example: Cat is seen throwing up -> execution agent notifies home residents
+- Frames with low confidence(50-70%) are saved and presented to the users to help classify, these frames are saved and then used to re-train the existing CV model. Naming people/pets in these frames trains the model to recognize them and not act off of false positives (ex: notifying of an intruder when its really just a friend)
+
+![Home-Sec Workflow](/home-sec-workflow.png)
 
 ## Architecture
 
@@ -46,9 +51,11 @@ http://<pi4b-ip>/dashboard.html
 
 ## Directory Structure
 
-├── agents/
-| ├── captioning/
-| ├── execution/
+├──agent_hub/
+| ├── agents/
+| | ├── captioning/ # frame captioning agent
+| | ├── execution/ # agent that acts off of info from the frames
+| ├── profiles/ # home resident's info
 ├── cam/  
 │ ├── scripts/  
 │ │ ├── camera-stream.sh # RTSP streaming  
@@ -65,5 +72,5 @@ http://<pi4b-ip>/dashboard.html
 │ ├── web/  
 │ │ └── dashboard.html # Web UI  
 │ └── setup.sh # Automated setup  
-├── models/
+├── models/ # Where the CV models live, starts with the basic, grows as the model get retrained on data
 └── README.md
