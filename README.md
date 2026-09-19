@@ -74,3 +74,9 @@ http://<pi4b-ip>/dashboard.html
 │ └── setup.sh # Automated setup  
 ├── models/ # Where the CV models live, starts with the basic, grows as the model get retrained on data
 └── README.md
+
+## Running the Different Components
+
+uv run --project cam python cam/scripts/health_check.py
+uv run --project controller python controller/scripts/main.py
+uv run --project agent_hub/agents/execution python agent_hub/agents/execution/actions.py

@@ -14,6 +14,7 @@ from dataclasses import dataclass
 
 from courier import Courier
 from mcp.server import MCPServer
+from ollama import chat
 
 
 @dataclass
@@ -42,6 +43,8 @@ for user in users:
         id=user.id,
         profile={"email": user.email, "name": user.name, "phone_number": user.phone}
     )
+
+    
 """
 MCP SECTION
 """
@@ -91,10 +94,30 @@ async def notify_home_residents(message: str):
     for user in users:
         await notify_user(user, message)
 
-
 async def main():
     """Main function to run the MCP server."""
     # TODO: RUN OLLAMA AGENT WITH THE MCP TEST SERVER
+
+    message = [
+        {
+            'role': 'user', 
+            'content': {
+                "image_id": "123456",
+                "pre_proccessing_captions": "",
+                "people": "",
+                "objects": "",
+                "post_proccessing_captions": "",
+                "urgency": "",
+                "frame_description": "",
+                "errors": ""
+            }
+        }
+    ],
+
+    response = chat(
+        model=os.getenv("EXECUTION_MODEL"),
+        messages=message,
+                        )
 
 if __name__ == "__main__":
     asyncio.run(main())

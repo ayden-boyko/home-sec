@@ -1,0 +1,24 @@
+# Camera
+flask>=3.0
+
+# Controller
+flask>=3.0
+flask-cors>=4.0
+requests>=2.31
+numpy>=1.26
+opencv-python>=4.9 ; platform_machine != "aarch64"
+opencv-python-headless>=4.9 ; platform_machine == "aarch64"
+
+# Execution Agent
+mcp>=2.2.0
+trycourier>=9.6.0
+ollama>=0.6.2
+
+# Captioning Agent
+ollama>=0.6.2
+numpy>=2.2.6
+
+# Dev tools
+ruff>=0.8.0
+pytest>=8.0.0
+mypy>=1.10.0
