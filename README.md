@@ -3,7 +3,7 @@
 A Raspberry Pi-based multi-camera home security system with web dashboard and real-time streaming.
 This system has several "smart" features:
 
-- Flagged frames are passed into a multi-agent workflow, these agents then react accordingly.
+- Flagged clips are passed to agents that then react accordingly.
   - Example: Cat is seen throwing up -> execution agent notifies home residents
 - Frames with low confidence(50-70%) are saved and presented to the users to help classify, these frames are saved and then used to re-train the existing CV model. Naming people/pets in these frames trains the model to recognize them and not act off of false positives (ex: notifying of an intruder when its really just a friend)
 
@@ -53,7 +53,6 @@ http://<pi4b-ip>/dashboard.html
 
 ├──agent_hub/
 | ├── agents/
-| | ├── captioning/ # frame captioning agent
 | | ├── execution/ # agent that acts off of info from the frames
 | ├── profiles/ # home resident's info
 ├── cam/  

@@ -15,3 +15,5 @@ agent_hub/profiles/*.yml
 agent_hub/profiles/*.json
 
 !agent_hub/profiles/.gitkeep
+
+agent_hub/agents/captioning
