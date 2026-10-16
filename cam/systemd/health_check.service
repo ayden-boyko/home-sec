@@ -1,17 +1,16 @@
 [Unit]
-Description=Camera Health Check Endpoint
+Description=Camera RTSP Stream
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=p1
-WorkingDirectory=/home/p1
-ExecStart=/usr/bin/python3 /home/p1/health_check.py
+DynamicUser=yes
+SupplementaryGroups=video
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /usr/local/bin/health_check.py
 Restart=always
 RestartSec=5
-StandardOutput=journal
-StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

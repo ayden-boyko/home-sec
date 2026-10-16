@@ -1,32 +1,30 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+
+cd "$(dirname "$(readlink -f "$0")")"
+
+if [ "$EUID" -ne 0 ]; then
+  echo "Run with sudo: sudo ./setup.sh" >&2
+  exit 1
+fi
 
 echo "Setting up Pi Zero camera stream..."
 
-# Install dependencies
 echo "Installing dependencies..."
-pip install flask
+apt-get update
+apt-get install -y python3-flask   # add python3-picamera2 if you use it
 
-# Copy scripts to correct locations
 echo "Installing scripts..."
-sudo cp scripts/camera_stream.sh /usr/local/bin/camera_stream.sh
-sudo chmod +x /usr/local/bin/camera_stream.sh
+install -m 0755 scripts/camera_stream.py /usr/local/bin/camera_stream.py
+install -m 0755 scripts/health_check.py /usr/local/bin/health_check.py
 
-cp scripts/health_check.py ~/$USER/health_check.py
-
-# Install systemd services
 echo "Installing systemd services..."
-sudo cp systemd/camera_stream.service /etc/systemd/system/
-sudo cp systemd/health_check.service /etc/systemd/system/
+install -m 0644 systemd/camera_stream.service systemd/health_check.service /etc/systemd/system/
 
-# Enable and start services
-echo "Starting services..."
-sudo systemctl daemon-reload
-sudo systemctl enable camera_stream.service health_check.service
-sudo systemctl start camera_stream.service health_check.service
+systemctl daemon-reload
+systemctl enable camera_stream.service health_check.service
+systemctl restart camera_stream.service health_check.service
 
 echo "✓ Pi Zero setup complete!"
-echo ""
 echo "Check status with:"
-echo "  sudo systemctl status camera_stream.service"
-echo "  sudo systemctl status health_check.service"
+echo "  systemctl status camera_stream.service health_check.service"
