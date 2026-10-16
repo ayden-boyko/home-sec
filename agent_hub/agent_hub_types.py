@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class User:
     id: str
@@ -22,6 +23,6 @@ class User:
 class ExecutionAgentInput:
     """The input for the execution agent."""
 
-    image_id: str
-    image: bytes
+    clip_id: str
+    clip: bytes
     pre_proccessing_captions: list[str]
