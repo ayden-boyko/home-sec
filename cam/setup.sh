@@ -12,7 +12,7 @@ echo "Setting up Pi Zero camera stream..."
 
 echo "Installing dependencies..."
 apt-get update
-apt-get install -y python3-flask   # add python3-picamera2 if you use it
+apt-get install -y python3-flask   # add python3-picamera2 if used
 
 echo "Installing scripts..."
 install -m 0755 scripts/camera_stream.py /usr/local/bin/camera_stream.py
