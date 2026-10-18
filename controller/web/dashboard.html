@@ -123,48 +123,80 @@
 
     <script>
       const API_URL = `http://${window.location.hostname}:5001/api`;
+      const players = new Map(); // camera id -> {card, hls, status}
 
-      function setupHLS(videoElement, streamUrl) {
+      function setupHLS(video, url) {
         if (Hls.isSupported()) {
           const hls = new Hls();
-          hls.loadSource(streamUrl);
-          hls.attachMedia(videoElement);
-          hls.on(Hls.Events.ERROR, function (event, data) {
-            console.error("HLS error:", data);
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            if (!data.fatal) return;
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              setTimeout(() => hls.loadSource(url), 3000); // stream not ready yet, retry
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              hls.destroy();
+            }
           });
-        } else if (videoElement.canPlayType("application/vnd.apple.mpegurl")) {
-          videoElement.src = streamUrl;
+          return hls;
         }
+        if (video.canPlayType("application/vnd.apple.mpegurl")) {
+          video.src = url; // Safari
+        }
+        return null;
+      }
+
+      function createCard(cam) {
+        const card = document.createElement("div");
+        card.className = "camera";
+        card.innerHTML = `
+    <div class="camera-header">
+      <div>
+        <div class="camera-name"></div>
+        <div class="camera-addr" style="font-size:12px;color:#aaa;"></div>
+      </div>
+      <div>
+        <span class="status"></span>
+        <button class="delete-btn">Delete</button>
+      </div>
+    </div>
+    <video controls autoplay muted playsinline></video>`;
+        card.querySelector(".camera-name").textContent = cam.name;
+        card.querySelector(".camera-addr").textContent =
+          `${cam.ip}:${cam.port}`;
+        card.querySelector(".delete-btn").onclick = () => deleteCamera(cam.id);
+        document.getElementById("cameraGrid").appendChild(card);
+        const hls = setupHLS(
+          card.querySelector("video"),
+          `/hls/cam${cam.id}/stream.m3u8`,
+        );
+        return { card, hls, status: card.querySelector(".status") };
       }
 
       async function loadCameras() {
         try {
           const resp = await fetch(`${API_URL}/cameras`);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const cameras = await resp.json();
-          const grid = document.getElementById("cameraGrid");
-          grid.innerHTML = "";
-
+          const seen = new Set();
           for (const cam of cameras) {
-            const div = document.createElement("div");
-            div.className = "camera";
-            const videoId = `video-cam${cam.id}`;
-            div.innerHTML = `
-                        <div class="camera-header">
-                            <div>
-                                <div class="camera-name">${cam.name}</div>
-                                <div style="font-size: 12px; color: #aaa;">${cam.ip}:${cam.port}</div>
-                            </div>
-                            <div>
-                                <span class="status ${cam.status}">${cam.status.toUpperCase()}</span>
-                                <button class="delete-btn" onclick="deleteCamera(${cam.id})">Delete</button>
-                            </div>
-                        </div>
-                        <video id="${videoId}" controls autoplay style="width: 100%; height: 300px; background: #000;"></video>
-                    `;
-            grid.appendChild(div);
-
-            const videoEl = document.getElementById(videoId);
-            setupHLS(videoEl, `/cam${cam.id}/stream.m3u8`);
+            seen.add(cam.id);
+            let p = players.get(cam.id);
+            if (!p) {
+              p = createCard(cam);
+              players.set(cam.id, p);
+            }
+            p.status.textContent = cam.status.toUpperCase();
+            p.status.className = `status ${cam.status}`;
+          }
+          for (const [id, p] of players) {
+            if (!seen.has(id)) {
+              if (p.hls) p.hls.destroy();
+              p.card.remove();
+              players.delete(id);
+            }
           }
         } catch (err) {
           console.error("Error loading cameras:", err);
@@ -172,22 +204,27 @@
       }
 
       async function addCamera() {
-        const name = document.getElementById("cameraName").value;
-        const ip = document.getElementById("cameraIP").value;
+        const name = document.getElementById("cameraName").value.trim();
+        const ip = document.getElementById("cameraIP").value.trim();
         const port =
           parseInt(document.getElementById("cameraPort").value) || 5000;
-
         if (!name || !ip) {
           alert("Name and IP required");
           return;
         }
-
         try {
           const resp = await fetch(`${API_URL}/cameras`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, ip, port }),
           });
+          if (
+            !resp.ok &&
+            !(resp.headers.get("content-type") || "").includes("json")
+          ) {
+            alert(`Server error: HTTP ${resp.status}`);
+            return;
+          }
           const result = await resp.json();
           alert(result.message);
           if (result.success) {
@@ -211,7 +248,7 @@
       }
 
       loadCameras();
-      setInterval(loadCameras, 30000);
+      setInterval(loadCameras, 10000);
     </script>
   </body>
 </html>
