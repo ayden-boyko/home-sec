@@ -4,10 +4,10 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=simple
 User=pi4b
+Type=simple
 WorkingDirectory=/home/pi4b
-ExecStart=/usr/bin/python3 /home/pi4b/camera_controller.py
+ExecStart=/home/pi4b/camera_venv/bin/python /home/pi4b/camera_controller.py
 Restart=always
 RestartSec=5
 StandardOutput=journal
