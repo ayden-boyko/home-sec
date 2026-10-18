@@ -5,7 +5,9 @@ echo "Setting up Pi4B controller..."
 
 # Install dependencies
 echo "Installing dependencies..."
+sudo apt update
 sudo apt install -y nginx
+sudo apt install python3-pip
 pip install -r "$(dirname "$0")/requirements.txt"
 
 # Copy scripts
