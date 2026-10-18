@@ -6,9 +6,6 @@ import camera_controller as CC
 from flask import Flask
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app)
-
 DB_FILE = os.path.expanduser("~/cameras.db")
 HLS_BASE = "/var/www/html" 
 

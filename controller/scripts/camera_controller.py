@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 from flask import Flask, jsonify, request
+from flask_cors import CORS   # with the other imports
 
 PST = timezone(timedelta(hours=-8))
 
@@ -17,6 +18,7 @@ class CameraController:
         self.hls_base = hls_base
         self.processes = {}  # Store subprocesses for each camera
         self.app = Flask(__name__)
+        CORS(self.app)  # Enable CORS for all routes
         self.setup_routes()
         self.init_db()
 
@@ -111,6 +113,7 @@ class CameraController:
         try:
             # TODO: SSRF protection: validate IP address format and ensure it's not a private/internal IP
             r = requests.get(f'http://{ip}:8000/health', timeout=2)
+            r.raise_for_status()
             print(f"Health check passed for {ip}: {r.status_code}")
         except Exception as e:
             print(f"Health check failed for {ip}: {e}")
