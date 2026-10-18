@@ -3,6 +3,7 @@ import sqlite3
 import subprocess
 import time
 from datetime import datetime, timedelta, timezone
+import shutil
 
 import requests
 from flask import Flask, jsonify, request
@@ -136,6 +137,7 @@ class CameraController:
 
     def remove_camera(self, camera_id) -> tuple[bool, str]:
         self.stop_stream(camera_id)
+        shutil.rmtree(f"{self.hls_base}/cam{camera_id}", ignore_errors=True)
         conn = sqlite3.connect(self.db_file)
         c = conn.cursor()
         c.execute('DELETE FROM cameras WHERE id = ?', (camera_id,))
@@ -149,11 +151,11 @@ class CameraController:
         cmd = [
             'ffmpeg', '-nostdin',
             '-fflags', 'nobuffer+genpts',
-            '-f', 'h264', '-use_wallclock_as_timestamps', '1',
+            '-f', 'h264', '-use_wallclock_as_timestamps', '1', '-rw_timeout', '10000000',
             '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
             '-c:v', 'copy', '-an',
-            '-f', 'hls', '-hls_time', '2', '-hls_list_size', '10',
-            '-hls_flags', 'delete_segments+temp_file',
+            '-f', 'hls', '-hls_time', '2', '-hls_list_size', '6',
+            '-hls_flags', 'delete_segments+temp_file+omit_endlist',
             f'{hls_dir}/stream.m3u8',
         ]
         try:
