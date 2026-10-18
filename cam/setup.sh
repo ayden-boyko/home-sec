@@ -16,6 +16,7 @@ apt-get install -y python3-flask   # add python3-picamera2 if used
 
 echo "Installing scripts..."
 install -m 0755 scripts/camera_stream.py /usr/local/bin/camera_stream.py
+install -m 0644 scripts/ir_control.py /usr/local/bin/ir_control.py
 
 echo "Installing systemd services..."
 install -m 0644 systemd/camera_stream.service /etc/systemd/system/

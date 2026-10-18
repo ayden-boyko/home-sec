@@ -154,7 +154,10 @@ class CameraController:
             '-f', 'h264', '-use_wallclock_as_timestamps', '1', '-rw_timeout', '10000000',
             '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
             '-c:v', 'copy', '-an',
-            '-f', 'hls', '-hls_time', '2', '-hls_list_size', '6',
+            # 1 s segments: keyframes arrive every 1 s (8 frames at 8 fps), so
+            # this is the floor. Shorter segments cut the player's offset roughly
+            # in half (liveSyncDurationCount: 2 -> ~2 s instead of ~4 s).
+            '-f', 'hls', '-hls_time', '1', '-hls_list_size', '4',
             '-hls_flags', 'delete_segments+temp_file+omit_endlist',
             f'{hls_dir}/stream.m3u8',
         ]
