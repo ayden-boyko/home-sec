@@ -6,9 +6,9 @@ Wants=network-online.target
 [Service]
 User=pi4b
 Type=simple
-WorkingDirectory=/home/pi4b
-ExecStart=/home/pi4b/camera_venv/bin/python /home/pi4b/camera_controller.py
-Restart=always
+WorkingDirectory=/home/pi4b/Repos/camera_controller/controller/scripts
+ExecStart=/home/pi4b/camera_venv/bin/python /home/pi4b/Repos/camera_controller/controller/scripts/main.py
+Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
