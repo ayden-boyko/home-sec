@@ -149,7 +149,7 @@ class CameraController:
         cmd = [
             'ffmpeg', '-nostdin',
             '-fflags', 'nobuffer+genpts',
-            '-f', 'h264', '-framerate', '8',
+            '-f', 'h264', '-use_wallclock_as_timestamps', '1',
             '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
             '-c:v', 'copy', '-an',
             '-f', 'hls', '-hls_time', '2', '-hls_list_size', '10',
