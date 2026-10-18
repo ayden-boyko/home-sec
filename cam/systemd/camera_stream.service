@@ -6,8 +6,10 @@ Wants=network-online.target
 [Service]
 Type=simple
 DynamicUser=yes
-SupplementaryGroups=video
+SupplementaryGroups=video gpio
 Environment=PYTHONUNBUFFERED=1
+RuntimeDirectory=camera_stream
+WorkingDirectory=/run/camera_stream
 ExecStart=/usr/bin/python3 /usr/local/bin/camera_stream.py
 Restart=always
 RestartSec=5
