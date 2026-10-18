@@ -27,6 +27,9 @@ sudo cp systemd/camera_controller.service /etc/systemd/system/
 echo "Installing web dashboard..."
 sudo install -D -m 644 web/dashboard.html /var/www/html/dashboard.html
 
+sudo mkdir -p /var/www/html/hls
+sudo chown "$USER":"$USER" /var/www/html/hls
+
 # Enable services
 echo "Starting services..."
 sudo systemctl daemon-reload
