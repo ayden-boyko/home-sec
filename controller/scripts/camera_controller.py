@@ -143,103 +143,55 @@ class CameraController:
     def start_stream(self, camera_id, camera_ip, camera_port) -> bool:
         hls_dir = f"{self.hls_base}/cam{camera_id}"
         os.makedirs(hls_dir, exist_ok=True)
-    
         cmd = [
-            [
-                'ffmpeg',
-                '-fflags', 'nobuffer+genpts',  # genpts fixes missing presentation timestamps over raw TCP
-                '-reorder_queue_size', '200',  # Buffers packets in Pi 4B RAM to smooth out Wi-Fi jitter
-                '-i', f'tcp://{camera_ip}:{camera_port}?listen=0', # Actively connects to the Pi Zero
-                '-c:v', 'copy',                # Direct stream copy (uses ~1-2% total CPU on Pi 4B)
-                '-an',                         # Drops audio to save network bandwidth (remove if mic is used)
-                '-f', 'hls',
-                '-hls_time', '2',
-                '-hls_list_size', '10',
-                '-hls_flags', 'delete_segments+temp_file', # temp_file ensures the playlist doesn't glitch during overwrites
-                f'{hls_dir}/stream.m3u8'       # Safely saved directly to your NVMe SSD path
-            ]
-
+            'ffmpeg', '-nostdin',
+            '-fflags', 'nobuffer+genpts',
+            '-f', 'h264', '-framerate', '8',
+            '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
+            '-c:v', 'copy', '-an',
+            '-f', 'hls', '-hls_time', '2', '-hls_list_size', '10',
+            '-hls_flags', 'delete_segments+temp_file',
+            f'{hls_dir}/stream.m3u8',
         ]
-        
-        #TODO: https://claude.ai/chat/4f84f2f7-8524-4b42-938a-7b03160ed588
-        cmd_decode = [
-            'ffmpeg', '-i', f'tcp://{camera_ip}:{camera_port}?listen=0',
-            '-f', 'rawvideo', '-pix_fmt', 'bgr24',
-            '-vf', 'scale=1280:720',
-            'pipe:1'
-        ]
-        
-        while True:
-            try:
-                print(f"Starting ffmpeg: {' '.join(cmd)}")
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                self.processes[camera_id] = proc
-                proc.wait() # Wait for the process to finish (blocking)
-                print(f"ffmpeg process for camera {camera_id} exited with code {proc.returncode}")
-            except Exception as e:
-                print(f"Failed to start ffmpeg for camera {camera_id}: {e}")
-                return False
-        
-        
-        conn = sqlite3.connect(self.db_file)
-        c = conn.cursor()
-        c.execute('INSERT OR REPLACE INTO streams (camera_id, process_id) VALUES (?, ?)', (camera_id, proc.pid))
-        conn.commit()
-        conn.close()
-        
+        try:
+            with open(f'{hls_dir}/ffmpeg.log', 'ab') as log:
+                proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=log)
+        except Exception as e:
+            print(f"Failed to start ffmpeg for camera {camera_id}: {e}")
+            return False
+        self.processes[camera_id] = proc
         print(f"Started stream for camera {camera_id} (PID: {proc.pid})")
         return True
 
     def stop_stream(self, camera_id) -> bool:
-        conn = sqlite3.connect(self.db_file)
-        c = conn.cursor()
-        c.execute('SELECT process_id FROM streams WHERE camera_id = ?', (camera_id,))
-        row = c.fetchone()
-        if row:
-            pid = row[0]
+        proc = self.processes.pop(camera_id, None)
+        if proc and proc.poll() is None:
+            proc.terminate()
             try:
-                proc = self.processes.get(camera_id)
-                if proc is None:
-                    print(f"No running process found for camera {camera_id}")
-                    return False
-                else:
-                    proc.poll()  # Check if the process is still running
-                    if proc.returncode is None:  # Process is still running
-                        os.kill(pid, 15)  # Send SIGTERM to the process
-                        print(f"Stopped stream for camera {camera_id}")
-                    else:
-                        print(f"Stream for camera {camera_id} is not running, no need to stop.")
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except Exception as e:
-                print(f"Failed to stop stream for camera {camera_id}: {e}")
-                return False
-            c.execute('DELETE FROM streams WHERE camera_id = ?', (camera_id,))
-            conn.commit()
-            del self.processes[camera_id]
-        conn.close()
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
         return True
     
     def health_check_loop(self) -> None:
         while True:
             time.sleep(15)
-            self.start_stale_streams()  # Ensure all enabled cameras have running streams
+            try:
+                self.start_stale_streams()
+            except Exception as e:
+                print(f"Stale stream check failed: {e}")
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
             c.execute('SELECT id, ip FROM cameras WHERE enabled = 1')
-            cameras = c.fetchall()
-            
-            for camera_id, ip in cameras:
+            for camera_id, ip in c.fetchall():
                 try:
-                    requests.get(f'http://{ip}:8000/health', timeout=2)
-                    c.execute('UPDATE cameras SET last_seen = ? WHERE id = ?', 
-                            (datetime.now(PST).isoformat(), camera_id))
+                    r = requests.get(f'http://{ip}:8000/health', timeout=2)
+                    r.raise_for_status()
+                    c.execute('UPDATE cameras SET last_seen = ? WHERE id = ?',
+                            (datetime.now(timezone.utc).isoformat(), camera_id))
                     conn.commit()
-                except (KeyboardInterrupt, SystemExit):
-                    raise
                 except Exception as e:
                     print(f"Health check failed for camera {camera_id}: {e}")
-            
             conn.close()
 
     # returns the processes dictionary for external access (e.g., for monitoring or management)
